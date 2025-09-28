@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
 
 const connectDB = async () => {
   try {
-    await mongoose.connect("mongodb+srv://muhammadahmad:ahmad12345@cluster0.jqmmrds.mongodb.net/", {
+    await mongoose.connect(process.env.MONGODB_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

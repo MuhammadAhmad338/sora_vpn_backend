@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 import User from "../models/user.js";
 
-const JWT_SECRET = "your_secret_key_ahmad_muhammad_ahmad"; // use dotenv in production
+dotenv.config();
 
 // Signup Controller
 export const signup = async (req, res) => {
@@ -38,7 +39,7 @@ export const login = async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id, email: user.email, username: user.username },
-      JWT_SECRET,
+      process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
