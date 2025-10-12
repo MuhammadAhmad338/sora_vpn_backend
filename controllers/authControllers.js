@@ -73,7 +73,7 @@ export const forgotPassword = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const resetToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "15m" });
-    const resetLink = `https://138.199.232.44:3000/resetpassword/${resetToken}`;
+    const resetLink = `https://138.199.232.44:3001/resetpassword/${resetToken}`;
 
     await transporter.sendMail({
       from: `"VPN Support" <${process.env.SMTP_USER}>`,
