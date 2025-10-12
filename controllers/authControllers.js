@@ -1,20 +1,30 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
 import User from "../models/user.js";
 
 dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET;
 
+// Nodemailer transporter setup for Gmail
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587, // or 465 for SSL
+  secure: false, // true for 465, false for other ports (like 587)
+  auth: {
+    user: process.env.SMTP_USER, // Your full Gmail address (e.g., "youremail@gmail.com")
+    pass: process.env.SMTP_PASS, // Your Google App Password
+  },
+});
 // Signup Controller
 export const signup = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // Check if username or email already exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-    if (existingUser) {
+    if (existingUser)
       return res.status(400).json({ message: "Email or Username already taken" });
-    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ username, email, password: hashedPassword });
@@ -35,57 +45,68 @@ export const login = async (req, res) => {
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isPasswordValid)
+      return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign(
       { id: user._id, email: user.email, username: user.username },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: "1h" }
     );
 
     res.json({
       message: "Login successful",
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-      },
+      user: { id: user._id, username: user.username, email: user.email },
     });
   } catch (err) {
     res.status(500).json({ message: "Login failed", error: err.message });
   }
 };
 
-
+// Forgot Password (Send Email)
 export const forgotPassword = async (req, res) => {
-    try {
-      const { email } = req.body;
-      const user = await User.findOne({ email });
-  
-      if (!user) return res.status(404).json({ message: "User not found" });
-  
-      // Generate reset token
-      const resetToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "15m" });
-  
-      // Reset link (frontend route where user will reset password)
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-  
-      // Send email
-      await transporter.sendMail({
-        from: `"VPN Support" <${process.env.SMTP_USER}>`,
-        to: email,
-        subject: "Password Reset Request",
-        html: `
-          <p>Hello <b>${user.username}</b>,</p>
-          <p>You requested to reset your password.</p>
-          <p>Click here to reset: <a href="${resetLink}">${resetLink}</a></p>
-          <p>This link will expire in 15 minutes.</p>
-        `,
-      });
-  
-      res.json({ message: "Password reset email sent" });
-    } catch (err) {
-      res.status(500).json({ message: "Error sending reset email", error: err.message });
-    }
-  };
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const resetToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "15m" });
+    const resetLink = `http://localhost:3000/resetpassword/${resetToken}`;
+
+    await transporter.sendMail({
+      from: `"VPN Support" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Password Reset Request",
+      html: `
+        <p>Hello <b>${user.username}</b>,</p>
+        <p>You requested to reset your password.</p>
+        <p>Click below to reset it:</p>
+        <a href="${resetLink}">${resetLink}</a>
+        <p>This link will expire in 15 minutes.</p>
+      `,
+    });
+
+    res.json({ message: "Password reset email sent successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error sending reset email", error: err.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user) return res.status(404).json({ message: "User not found" });  
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+
+    res.status(500).json({ message: "Password reset failed", error: err.message });
+  }
+};
