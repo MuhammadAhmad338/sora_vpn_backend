@@ -1,6 +1,6 @@
+import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import User from "../models/user.js";
 
@@ -17,6 +17,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS, // Your Google App Password
   },
 });
+
 // Signup Controller
 export const signup = async (req, res) => {
   try {
@@ -73,7 +74,7 @@ export const forgotPassword = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const resetToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "15m" });
-    const resetLink = `https://138.199.232.44:3001/resetpassword/${resetToken}`;
+    const resetLink = `https://datascape.site/resetpassword/${resetToken}`;
 
     await transporter.sendMail({
       from: `"VPN Support" <${process.env.SMTP_USER}>`,
@@ -96,7 +97,11 @@ export const forgotPassword = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
+
     const { token, newPassword } = req.body;
+    //print it
+    console.log("Reset token:", token);
+    
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(decoded.id);
 
