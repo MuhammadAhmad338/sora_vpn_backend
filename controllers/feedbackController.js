@@ -1,4 +1,5 @@
 import Feedback from "../models/feedback.js";
+import Contact from "../models/contact.js";
 
 export const feedbackController = async (req, res) => {
     try {
@@ -14,3 +15,15 @@ export const feedbackController = async (req, res) => {
         res.status(500).json({ message: "Failed to submit feedback", error: error.message });
     }
 }
+
+export const contactController = async (req, res) => {
+    try {
+        const { name, email, message } = req.body;
+        const newContact = new Contact({ name, email, message });
+        await newContact.save();
+        console.log("Contact message received:", { name, email, message });
+        res.status(200).json({ message: "Contact message submitted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to submit contact message", error: error.message });
+    }
+}   

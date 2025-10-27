@@ -99,9 +99,7 @@ export const resetPassword = async (req, res) => {
   try {
 
     const { token, newPassword } = req.body;
-    //print it
-    console.log("Reset token:", token);
-    
+        
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(decoded.id);
 
