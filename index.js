@@ -6,6 +6,7 @@ import vpnRoutes from "./Routes/vpnRoutes.js";
 import authRoutes from "./Routes/authRoutes.js";
 import planRoutes from "./Routes/planRoutes.js";
 import userRoutes from "./Routes/userRoutes.js";
+import supportRoutes from "./Routes/supportRoutes.js"; 
 import feedbackRoutes from "./Routes/feedbackRoutes.js";
 
 const app = express();
@@ -22,7 +23,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/plans", planRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/user", userRoutes);
-
+app.use("/api/support", supportRoutes);
 
 const PORT = 4000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
