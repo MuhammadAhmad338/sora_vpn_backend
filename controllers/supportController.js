@@ -2,7 +2,7 @@ import Support from "../models/support.js";
 
 export const postSupport = async (req, res) => {
     try {
-        console.log("✅ Support request received");
+        console.log("Support request received");
         // console.log("Request body:", req.body);
         
         const { name, email, message } = req.body;
