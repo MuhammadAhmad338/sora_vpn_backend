@@ -86,7 +86,7 @@ export const forgotPassword = async (req, res) => {
         <p>Click below to reset it:</p>
         <a href="${resetLink}">${resetLink}</a>
         <p>This link will expire in 15 minutes.</p>
-      `,
+    `,
     });
 
     res.json({ message: "Password reset email sent successfully" });
