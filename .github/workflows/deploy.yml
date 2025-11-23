@@ -27,6 +27,5 @@ jobs:
           git clean -fd &&
           git pull origin main &&
           npm install &&
-          NEXT_DISABLE_ESLINT=1 npm run build &&
           pm2 restart sora_vpn_backend
         "
